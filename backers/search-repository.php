@@ -1,8 +1,4 @@
 <?php
-/**
- * Backers: Search Repository (Versi Simpel Pemula)
- * Lokasi: backers/search-repository.php
- */
 
 // abort if this file is called directly
 if ( ! defined( 'ABSPATH' ) || ! defined( 'WPINC' ) || ! function_exists( 'add_action' ) ) {
@@ -11,34 +7,45 @@ if ( ! defined( 'ABSPATH' ) || ! defined( 'WPINC' ) || ! function_exists( 'add_a
 }
 
 function linkers_run_search_repository() {
-    // tangkap inputan dari form pencarian kalau pengunjung menekan tombol "cari"
-    $kata_kunci = isset( $_GET['cari_kata'] ) ? sanitize_text_field( $_GET['cari_kata'] ) : '';
-    $filter_jenis = isset( $_GET['cari_jenis'] ) ? sanitize_text_field( $_GET['cari_jenis'] ) : '';
-    $filter_topik = isset( $_GET['cari_topik'] ) ? sanitize_text_field( $_GET['cari_topik'] ) : '';
-    $filter_tahun = isset( $_GET['cari_tahun'] ) ? sanitize_text_field( $_GET['cari_tahun'] ) : '';
+    // tangkap input kata kunci dan filter dari URL (method GET)
+    $kata_kunci   = isset( $_GET['kata_kunci'] ) ? sanitize_text_field( $_GET['kata_kunci'] ) : '';
+    $filter_jenis = isset( $_GET['filter_jenis'] ) ? sanitize_text_field( $_GET['filter_jenis'] ) : '';
+    $filter_topik = isset( $_GET['filter_topik'] ) ? sanitize_text_field( $_GET['filter_topik'] ) : '';
+    $filter_tahun = isset( $_GET['filter_tahun'] ) ? sanitize_text_field( $_GET['filter_tahun'] ) : '';
 
-    // ngambil daftar pilihan dari taxonomy untuk isi dropdown filter
-    $list_jenis = get_terms( array( 'taxonomy' => 'jenis_koleksi', 'hide_empty' => false ) );
-    $list_topik = get_terms( array( 'taxonomy' => 'topik_dokumen', 'hide_empty' => false ) );
-    $list_tahun = get_terms( array( 'taxonomy' => 'tahun_dokumen', 'hide_empty' => false ) );
+    // ambil daftar pilihan untuk dropdown filter dari taksonomi
+    $daftar_jenis = get_terms( array(
+        'taxonomy'   => 'jenis_koleksi',
+        'hide_empty' => false,
+    ) );
+
+    $daftar_topik = get_terms( array(
+        'taxonomy'   => 'topik_dokumen',
+        'hide_empty' => false,
+    ) );
+
+    $daftar_tahun = get_terms( array(
+        'taxonomy'   => 'tahun_dokumen',
+        'hide_empty' => false,
+    ) );
 
     ob_start();
     ?>
 
-    <!-- form kotak pencarian -->
+    <!-- Form Pencarian dan Penyaringan Dokumen -->
     <form method="GET" action="">
         <div>
-            <label for="cari_kata">Kata Kunci (Judul / Isi):</label><br>
-            <input type="text" id="cari_kata" name="cari_kata" value="<?php echo esc_attr( $kata_kunci ); ?>" placeholder="Ketik judul atau kata kunci...">
+            <label for="kata_kunci">Kata Kunci (Judul / Isi):</label><br>
+            <input type="text" id="kata_kunci" name="kata_kunci" value="<?php echo esc_attr( $kata_kunci ); ?>" placeholder="Ketik judul atau kata kunci...">
         </div>
         <br>
 
         <div>
-            <label for="cari_jenis">Jenis Koleksi:</label><br>
-            <select id="cari_jenis" name="cari_jenis">
+            <label for="filter_jenis">Jenis Koleksi:</label><br>
+            <select id="filter_jenis" name="filter_jenis">
                 <option value="">-- Semua Jenis --</option>
-                <?php if ( ! empty( $list_jenis ) && ! is_wp_error( $list_jenis ) ) : ?>
-                    <?php foreach ( $list_jenis as $jenis ) : ?>
+                <?php if ( ! empty( $daftar_jenis ) && ! is_wp_error( $daftar_jenis ) ) : ?>
+                    <?php foreach ( $daftar_jenis as $jenis ) : ?>
                         <option value="<?php echo esc_attr( $jenis->slug ); ?>" <?php selected( $filter_jenis, $jenis->slug ); ?>>
                             <?php echo esc_html( $jenis->name ); ?>
                         </option>
@@ -49,11 +56,11 @@ function linkers_run_search_repository() {
         <br>
 
         <div>
-            <label for="cari_topik">Topik / Subjek:</label><br>
-            <select id="cari_topik" name="cari_topik">
+            <label for="filter_topik">Topik / Subjek:</label><br>
+            <select id="filter_topik" name="filter_topik">
                 <option value="">-- Semua Topik --</option>
-                <?php if ( ! empty( $list_topik ) && ! is_wp_error( $list_topik ) ) : ?>
-                    <?php foreach ( $list_topik as $topik ) : ?>
+                <?php if ( ! empty( $daftar_topik ) && ! is_wp_error( $daftar_topik ) ) : ?>
+                    <?php foreach ( $daftar_topik as $topik ) : ?>
                         <option value="<?php echo esc_attr( $topik->slug ); ?>" <?php selected( $filter_topik, $topik->slug ); ?>>
                             <?php echo esc_html( $topik->name ); ?>
                         </option>
@@ -64,11 +71,11 @@ function linkers_run_search_repository() {
         <br>
 
         <div>
-            <label for="cari_tahun">Tahun Pembuatan:</label><br>
-            <select id="cari_tahun" name="cari_tahun">
+            <label for="filter_tahun">Tahun Pembuatan:</label><br>
+            <select id="filter_tahun" name="filter_tahun">
                 <option value="">-- Semua Tahun --</option>
-                <?php if ( ! empty( $list_tahun ) && ! is_wp_error( $list_tahun ) ) : ?>
-                    <?php foreach ( $list_tahun as $tahun ) : ?>
+                <?php if ( ! empty( $daftar_tahun ) && ! is_wp_error( $daftar_tahun ) ) : ?>
+                    <?php foreach ( $daftar_tahun as $tahun ) : ?>
                         <option value="<?php echo esc_attr( $tahun->slug ); ?>" <?php selected( $filter_tahun, $tahun->slug ); ?>>
                             <?php echo esc_html( $tahun->name ); ?>
                         </option>
@@ -78,88 +85,115 @@ function linkers_run_search_repository() {
         </div>
         <br>
 
-        <button type="submit" name="tombol_cari" value="1">Cari Dokumen</button>
-        <a href="?">Reset</a>
+        <button type="submit">Cari Dokumen</button>
+        <a href="<?php echo esc_url( get_permalink() ); ?>">Reset</a>
     </form>
+
     <hr>
 
     <?php
-    // proses pencarian (dijalankan jika pengunjung sudah mengisi form atau klik cari)
-    if ( isset( $_GET['tombol_cari'] ) ) {
-        // siapkan aturan pencarian dasar (hanya cpt linkers_doc, sudah publish, dan akses publik)
-        $aturan = array(
-            'post_type'      => 'linkers_doc',
-            'post_status'    => 'publish',
-            'posts_per_page' => 20,
-            's'              => $kata_kunci,
-            'meta_query'     => array(
-                array(
-                    'key'   => '_status_akses',
-                    'value' => 'public',
-                ),
+    // siapkan aturan pencarian dasar (hanya dokumen publish dan berstatus publik)
+    $aturan = array(
+        'post_type'      => 'linkers_doc',
+        'post_status'    => 'publish',
+        'posts_per_page' => 20,
+        'meta_query'     => array(
+            array(
+                'key'     => '_status_akses',
+                'value'   => array( 'public', 'publik' ),
+                'compare' => 'IN',
             ),
-        );
+        ),
+    );
 
-        // siapkan penampung filter taxonomy jika pengunjung memilih dropdown
-        $tax_filter = array( 'relation' => 'AND' );
-
-        if ( ! empty( $filter_jenis ) ) {
-            $tax_filter[] = array(
-                'taxonomy' => 'jenis_koleksi',
-                'field'    => 'slug',
-                'terms'    => $filter_jenis,
-            );
-        }
-
-        if ( ! empty( $filter_topik ) ) {
-            $tax_filter[] = array(
-                'taxonomy' => 'topik_dokumen',
-                'field'    => 'slug',
-                'terms'    => $filter_topik,
-            );
-        }
-
-        if ( ! empty( $filter_tahun ) ) {
-            $tax_filter[] = array(
-                'taxonomy' => 'tahun_dokumen',
-                'field'    => 'slug',
-                'terms'    => $filter_tahun,
-            );
-        }
-
-        // masukin filter taxonomy ke aturan jika ada minimal 1 dropdown yang dipilih
-        if ( count( $tax_filter ) > 1 ) {
-            $aturan['tax_query'] = $tax_filter;
-        }
-
-        $hasil_cari = new WP_Query( $aturan );
-
-        echo '<h3>Hasil Pencarian:</h3>';
-
-        // cek apakah dokumen yang dicari ketemu
-        if ( $hasil_cari->have_posts() ) {
-            echo '<ul>';
-            while ( $hasil_cari->have_posts() ) {
-                $hasil_cari->the_post();
-                $doc_id  = get_the_ID();
-                $penulis = get_post_meta( $doc_id, '_nama_pembuat', true );
-                $tanggal = get_the_date( 'd M Y' );
-
-                echo '<li>';
-                echo '<a href="' . esc_url( get_permalink() ) . '">' . esc_html( get_the_title() ) . '</a>';
-                echo ' - ' . esc_html( $penulis ) . ' (' . esc_html( $tanggal ) . ')';
-                echo '</li>';
-            }
-            echo '</ul>';
-        } else {
-            echo '<p>Dokumen yang kamu cari nggak ketemu nih.</p>';
-        }
-
-        wp_reset_postdata();
+    // masukkan kata kunci jika user mengetik pencarian
+    if ( ! empty( $kata_kunci ) ) {
+        $aturan['s'] = $kata_kunci;
     }
 
+    // siapkan penampung filter taksonomi
+    $tax_query = array( 'relation' => 'AND' );
+
+    if ( ! empty( $filter_jenis ) ) {
+        $tax_query[] = array(
+            'taxonomy' => 'jenis_koleksi',
+            'field'    => 'slug',
+            'terms'    => $filter_jenis,
+        );
+    }
+
+    if ( ! empty( $filter_topik ) ) {
+        $tax_query[] = array(
+            'taxonomy' => 'topik_dokumen',
+            'field'    => 'slug',
+            'terms'    => $filter_topik,
+        );
+    }
+
+    if ( ! empty( $filter_tahun ) ) {
+        $tax_query[] = array(
+            'taxonomy' => 'tahun_dokumen',
+            'field'    => 'slug',
+            'terms'    => $filter_tahun,
+        );
+    }
+
+    // pasang tax_query ke aturan pencarian jika ada filter yang dipilih
+    if ( count( $tax_query ) > 1 ) {
+        $aturan['tax_query'] = $tax_query;
+    }
+
+    $hasil_cari = new WP_Query( $aturan );
+
+    echo '<h3>Hasil Pencarian Dokumen:</h3>';
+
+    // decision: cek apakah dokumen ditemukan
+    if ( $hasil_cari->have_posts() ) {
+        // cabang YA: tampilkan daftar hasil pencarian
+        echo '<ul>';
+        while ( $hasil_cari->have_posts() ) {
+            $hasil_cari->the_post();
+            $doc_id     = get_the_ID();
+            $penulis    = get_post_meta( $doc_id, '_nama_pembuat', true );
+            $file_unduh = get_post_meta( $doc_id, '_tautan_file', true );
+
+            // ambil nama jenis koleksi
+            $terms_jenis = get_the_terms( $doc_id, 'jenis_koleksi' );
+            $jenis       = ( ! empty( $terms_jenis ) && ! is_wp_error( $terms_jenis ) ) ? $terms_jenis[0]->name : 'Dokumen';
+
+            // ambil nama topik atau subjek
+            $terms_subjek = get_the_terms( $doc_id, 'topik_dokumen' );
+            if ( ! empty( $terms_subjek ) && ! is_wp_error( $terms_subjek ) ) {
+                $daftar_subjek = wp_list_pluck( $terms_subjek, 'name' );
+                $subjek        = implode( ', ', $daftar_subjek );
+            } else {
+                $subjek = '-';
+            }
+
+            // ambil tahun pembuatan
+            $terms_tahun = get_the_terms( $doc_id, 'tahun_dokumen' );
+            $tahun       = ( ! empty( $terms_tahun ) && ! is_wp_error( $terms_tahun ) ) ? $terms_tahun[0]->name : '-';
+
+            echo '<li>';
+            echo '<a href="' . esc_url( get_permalink() ) . '"><strong>' . esc_html( get_the_title() ) . '</strong></a><br>';
+            echo '<small>Jenis: ' . esc_html( $jenis ) . ' | Subjek: ' . esc_html( $subjek ) . ' | Penulis: ' . esc_html( $penulis ) . ' | Tahun: ' . esc_html( $tahun ) . '</small>';
+
+            // tampilkan tautan unduh file jika tersedia
+            if ( ! empty( $file_unduh ) ) {
+                echo '<br><a href="' . esc_url( $file_unduh ) . '" target="_blank">Unduh Dokumen</a>';
+            }
+
+            echo '</li>';
+        }
+        echo '</ul>';
+    } else {
+        // cabang TIDAK: tampilkan pesan tidak ditemukan
+        echo '<p>Dokumen yang kamu cari nggak ketemu nih.</p>';
+    }
+
+    wp_reset_postdata();
     return ob_get_clean();
 }
 
-// daftar shortcode [linkers_search_repository]
+// daftarkan shortcode [linkers_search_repository]
 add_shortcode( 'linkers_search_repository', 'linkers_run_search_repository' );

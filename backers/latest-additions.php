@@ -19,8 +19,9 @@ function linkers_run_latest_additions() {
         'order'          => 'DESC',
         'meta_query'     => array(
             array(
-                'key'   => '_status_akses',
-                'value' => 'public',
+                'key'     => '_status_akses',
+                'value'   => array( 'public', 'publik' ),
+                'compare' => 'IN',
             ),
         ),
     );
@@ -47,8 +48,18 @@ function linkers_run_latest_additions() {
             $cuplikan    = get_the_excerpt();
 
             // Ambil jenis koleksi dari taksonomi jenis_koleksi
-            $terms = get_the_terms( $doc_id, 'jenis_koleksi' );
-            $jenis = ( ! empty( $terms ) && ! is_wp_error( $terms ) ) ? $terms[0]->name : 'Dokumen';
+            $terms_jenis = get_the_terms( $doc_id, 'jenis_koleksi' );
+            $jenis       = ( ! empty( $terms_jenis ) && ! is_wp_error( $terms_jenis ) ) ? $terms_jenis[0]->name : 'Dokumen';
+
+            // ambil subject
+            // implode buat menggabungkan elemen-elemen di dalam sebuah array menjadi satu string
+            $terms_subjek = get_the_terms( $doc_id, 'topik_dokumen' );
+            if ( ! empty( $terms_subjek ) && ! is_wp_error( $terms_subjek ) ) {
+                $daftar_subjek = wp_list_pluck( $terms_subjek, 'name' );
+                $subjek        = implode( ', ', $daftar_subjek );
+            } else {
+                $subjek = '-';
+            }
 
             echo '<li>';
 
@@ -59,7 +70,7 @@ function linkers_run_latest_additions() {
             }
 
             echo '<a href="' . esc_url( $tautan ) . '"><strong>' . esc_html( $judul ) . '</strong></a><br>';
-            echo '<small>Jenis: ' . esc_html( $jenis ) . ' | Penulis: ' . esc_html( $pembuat ) . ' | Masuk: ' . esc_html( $waktu_masuk ) . '</small>';
+            echo '<small>Jenis: ' . esc_html( $jenis ) . ' | Subjek: ' . esc_html( $subjek ) . ' | Penulis: ' . esc_html( $pembuat ) . ' | Masuk: ' . esc_html( $waktu_masuk ) . '</small>';
 
             if ( ! empty( $cuplikan ) ) {
                 echo '<p>' . esc_html( $cuplikan ) . '</p>';

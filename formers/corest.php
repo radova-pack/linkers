@@ -63,6 +63,7 @@ function linkers_former_dokumen( $post ) {
     linkers_former_nama_pembuat( $post );
     linkers_former_status_akses( $post );
     linkers_former_tautan_file( $post );
+    linkers_former_subject( $post );
 
 }
 
@@ -123,6 +124,15 @@ function linkers_former_tautan_file( $post ) {
 
 }
 
+function linkers_former_subject( $post ) {
+
+    $value = get_post_meta( $post->ID, '_subject', true );
+
+    echo '<label for="_subject">Subject</label><br>';
+    echo '<input type="text" id="_subject" name="_subject" value="' . esc_attr( $value ) . '"><br><br>';
+
+}
+
 /**
  * Sanitizes and saves the custom metadata when a linkers document is saved.
  *
@@ -152,5 +162,9 @@ function linkers_update_meta_box( $post_id ) {
         update_post_meta( $post_id, '_tautan_file', $value );
     }
 
+    if ( array_key_exists( '_subject', $_POST ) ) {
+        $value = esc_url_raw( $_POST['_subject'] );
+        update_post_meta( $post_id, '_subject', $value );
+    }
 }
 add_action( 'save_post', 'linkers_update_meta_box' );

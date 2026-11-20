@@ -23,11 +23,18 @@ function linkers_run_browse_repository() {
 
     // tampilin daftar rak/kelompok sesuai menu yang dipilih
     if ( $pilih_mode == 'pembuat' ) {
-        // ngambil semua dokumen publik dulu untuk ngumpulin nama penulisnya
+        // ngambil dokumen publik saja untuk ngumpulin nama penulisnya
         $semua_doc = get_posts( array(
             'post_type'      => 'linkers_doc',
             'post_status'    => 'publish',
             'posts_per_page' => -1,
+            'meta_query'     => array(
+                array(
+                    'key'     => '_status_akses',
+                    'value'   => array( 'public', 'publik' ),
+                    'compare' => 'IN',
+                ),
+            ),
         ) );
 
         // kumpulin nama pembuat ke dalam array biar nggak dobel
@@ -82,8 +89,9 @@ function linkers_run_browse_repository() {
             'posts_per_page' => 20,
             'meta_query'     => array(
                 array(
-                    'key'   => '_status_akses',
-                    'value' => 'public',
+                    'key'     => '_status_akses',
+                    'value'   => array( 'public', 'publik' ),
+                    'compare' => 'IN',
                 ),
             ),
         );
@@ -111,10 +119,26 @@ function linkers_run_browse_repository() {
             echo '<ul>';
             while ( $hasil->have_posts() ) {
                 $hasil->the_post();
-                $penulis = get_post_meta( get_the_ID(), '_nama_pembuat', true );
+                $doc_id     = get_the_ID();
+                $penulis    = get_post_meta( $doc_id, '_nama_pembuat', true );
+                $file_unduh = get_post_meta( $doc_id, '_tautan_file', true );
+
+                // ambil nama jenis koleksi dan tahun pembuatan
+                $terms_jenis = get_the_terms( $doc_id, 'jenis_koleksi' );
+                $jenis       = ( ! empty( $terms_jenis ) && ! is_wp_error( $terms_jenis ) ) ? $terms_jenis[0]->name : 'Dokumen';
+
+                $terms_tahun = get_the_terms( $doc_id, 'tahun_dokumen' );
+                $tahun       = ( ! empty( $terms_tahun ) && ! is_wp_error( $terms_tahun ) ) ? $terms_tahun[0]->name : '-';
+
                 echo '<li>';
-                echo '<a href="' . esc_url( get_permalink() ) . '">' . esc_html( get_the_title() ) . '</a>';
-                echo ' - ' . esc_html( $penulis );
+                echo '<a href="' . esc_url( get_permalink() ) . '"><strong>' . esc_html( get_the_title() ) . '</strong></a><br>';
+                echo '<small>Jenis: ' . esc_html( $jenis ) . ' | Penulis: ' . esc_html( $penulis ) . ' | Tahun: ' . esc_html( $tahun ) . '</small>';
+
+                // tampilkan link unduh langsung jika file tersedia
+                if ( ! empty( $file_unduh ) ) {
+                    echo '<br><a href="' . esc_url( $file_unduh ) . '" target="_blank">Unduh Dokumen</a>';
+                }
+
                 echo '</li>';
             }
             echo '</ul>';

@@ -131,7 +131,7 @@ function linkers_run_uploads_document() {
 
         <div>
             <label for="tahun_publikasi">Tahun Publikasi (Wajib):</label><br>
-            <input type="number" id="tahun_publikasi" name="tahun_publikasi" value="<?php echo esc_attr( $tahun_pub ); ?>" placeholder="Contoh: 2026">
+            <input type="date" id="tahun_publikasi" name="tahun_publikasi" value="<?php echo esc_attr( $tahun_pub ); ?>">
         </div>
         <br>
 
